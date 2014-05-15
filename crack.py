@@ -29,6 +29,7 @@ for i in range(startLength,maxPasswordLength+1):
 					'0',
 					'-a',
 					'3',
+					'--status',
 					'--status-timer=5',
 					'-o',
 					'/tmp/crackatar.pot',
