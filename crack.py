@@ -1,51 +1,44 @@
 import subprocess
 import sys
+import re
 
-passwordLength = 8
+startLength = 1
+maxPasswordLength = 8
+matchRE = re.compile('^\w{32}\:.*$')
 
 emailProviders = [
-	"aol.com",
 	"gmail.com",
+	"aol.com",
 	"yahoo.com",
-	"baidu.com",
 	"hotmail.com",
-	"yahoo.com",
 ]
 
-for i in range(1,passwordLength + 1):
+for i in range(startLength,maxPasswordLength+1):
 	for email in emailProviders:
+		email = "@" + email
 		maskPattern = "?l" * i
 
-		mask = "%s@%s" % (maskPattern, email)
+		mask = maskPattern + email
 		print "Cracking length %s using mask %s" % (i,mask)
 
-		#import ipdb; ipdb.set_trace()
-
-		  #--pw-min=10 /tmp/hash.txt ?l?l?l?l?l?lp@gmail.com --quiet
-		proc = subprocess.Popen([
+		commandLine = [
 					'/tmp/hashcat-0.47/hashcat-cli64.app',
 					'-m',
 					'0',
 					'-a',
 					'3',
 					'--quiet',
-					'--pw-min=%d' % ((len(maskPattern) / 2) + len("@" + email)),
+					'--pw-min=%d' % (i + len(email)),
 					'/tmp/hash.txt',
-					'"' + mask +'"'
-				], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		print "Ran %s" % " ".join([
-					'/tmp/hashcat-0.47/hashcat-cli64.app',
-					'-m',
-					'0',
-					'-a',
-					'3',
-					'--quiet',
-					'--pw-min=%d' % ((len(maskPattern) / 2) + len("@" + email)),
-					'/tmp/hash.txt',
-					'"' + mask +'"'
-				])
+					str(mask)
+				]
 
-		(out, err) = proc.communicate()
-		if len(out) > 1:
-			print out
-			sys.exit(0)
+		proc = subprocess.Popen(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		#print "Ran %s" % " ".join(commandLine)
+		
+		for line in iter(proc.stdout.readline, ""):
+		    if matchRE.match(line):
+		    	print "Hash found! %s" % line
+		    	sys.exit(0)
+		    elif line.startswith('Progress') or line.startswith('Estimated'):
+		    	print line,
