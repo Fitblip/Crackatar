@@ -31,7 +31,7 @@ for i in range(startLength,maxPasswordLength+1):
 					'3',
 					'--status-timer=5',
 					'-o',
-					'/tmp/crackatar.pot'
+					'/tmp/crackatar.pot',
 					'-1',
 					'?l?u?d_.',
 		  			'hash.txt',
